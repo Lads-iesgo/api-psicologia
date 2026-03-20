@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model consulta {
+  id                  Int                 @id
+  paciente_id         Int
+  data_consulta       DateTime?           @db.Date
+  horario_id          Int
+  fisioterapeuta_id   Int
+  status              consulta_status?
+  horario_agendamento horario_agendamento @relation(fields: [horario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_horario_agendamento1")
+  paciente            paciente            @relation(fields: [paciente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_paciente1")
+  usuario             usuario             @relation(fields: [fisioterapeuta_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_usuario1")
+
+  @@index([horario_id], map: "fk_consulta_horario_agendamento1_idx")
+  @@index([paciente_id], map: "fk_consulta_paciente1_idx")
+  @@index([fisioterapeuta_id], map: "fk_consulta_usuario1_idx")
+}
+
+model horario_agendamento {
+  id       Int        @id @default(autoincrement())
+  horario  DateTime   @db.Time(0)
+  consulta consulta[]
+}
+
+model indisponibilidade {
+  id                Int       @id @default(autoincrement())
+  data_indisponivel DateTime  @db.Date
+  descricao         String?   @db.VarChar(255)
+  hora_inicio       DateTime? @db.Time(0)
+  hora_fim          DateTime? @db.Time(0)
+}
+
+model paciente {
+  id                 Int                  @id @default(autoincrement())
+  nome_completo      String?              @db.VarChar(100)
+  email              String?              @unique(map: "email") @db.VarChar(150)
+  telefone           String?              @db.VarChar(20)
+  genero             paciente_genero?
+  data_nascimento    DateTime?            @db.Date
+  cpf                String               @unique(map: "cpf") @db.VarChar(14)
+  cep                String?              @db.VarChar(10)
+  endereco           String?              @db.VarChar(255)
+  consulta           consulta[]
+  paciente_documento paciente_documento[]
+}
+
+model paciente_documento {
+  id              Int       @id @default(autoincrement())
+  paciente_id     Int
+  tipo_documento  String?   @db.VarChar(50)
+  nome_arquivo    String?   @db.VarChar(255)
+  caminho_arquivo String?   @db.VarChar(500)
+  criado_em       DateTime? @db.Timestamp(0)
+  paciente        paciente  @relation(fields: [paciente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_paciente_documento_paciente1")
+
+  @@index([paciente_id], map: "fk_paciente_documento_paciente1_idx")
+}
+
+model perfil {
+  id      Int       @id @default(autoincrement())
+  nome    String    @db.VarChar(50)
+  usuario usuario[]
+}
+
+model usuario {
+  id            Int        @id @default(autoincrement())
+  nome_completo String?    @db.VarChar(100)
+  email         String     @unique(map: "email") @db.VarChar(150)
+  senha_hash    String?    @db.VarChar(255)
+  telefone      String?    @db.VarChar(20)
+  cpf           String     @unique(map: "cpf") @db.VarChar(14)
+  semestre      String?    @db.VarChar(20)
+  perfil_id     Int
+  consulta      consulta[]
+  perfil        perfil     @relation(fields: [perfil_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_perfil")
+
+  @@index([perfil_id], map: "fk_usuario_perfil_idx")
+}
+
+enum paciente_genero {
+  masculino
+  feminino
+  nao_informar
+}
+
+enum consulta_status {
+  agendada
+  realizada
+  cancelada
+}
