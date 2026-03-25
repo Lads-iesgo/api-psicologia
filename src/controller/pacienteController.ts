@@ -139,3 +139,27 @@ export const updatePaciente = async (
     next(error);
   }
 };
+
+export const validar = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { cep, telefone } = req.body;
+
+    // Validar telefone
+    const telefoneValido = /^[0-9]{11}$/.test(telefone);
+
+    // Buscar CEP
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const cepDados = await response.json();
+
+    res.status(200).json({
+      telefone_valido: telefoneValido,
+      cep: cepDados
+    });
+  } catch (error) {
+    next(error);
+  }
+};
