@@ -1,4 +1,3 @@
-import { waitForDebugger } from "node:inspector";
 import prisma from "../config/db";
 import { PerfilInterface } from "../interfaces/types";
 import { Request, Response, NextFunction } from "express";

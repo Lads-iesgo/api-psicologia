@@ -112,3 +112,21 @@ export const updatePaciente = async (req: Request, res: Response, next: NextFunc
     next(error);
   }
 }
+
+export const deletePaciente = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id, 10);
+
+    await prisma.paciente.delete({
+      where: {id}
+    });
+
+    res.status(200).json({ message: "Paciente excluído com sucesso" });
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      res.status(404).json({ message: "Paciente não encontrado." });
+      return;
+    };
+    next(error);
+  }
+}

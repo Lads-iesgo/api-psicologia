@@ -9,6 +9,7 @@ import consultaRoutes from "./consulta.routes";
 import horarioRoutes from "./horario.routes";
 import authRoutes from "./auth.routes";
 import registerRoutes from "./register.routes";
+import indisponibilidadeRoutes from "./indisponibilidade.routes"
 
 if (!process.env.JWT_SECRET) {
   throw new Error("A variável de ambiente JWT_SECRET não está definida.");
@@ -34,6 +35,7 @@ app.use("/consulta", consultaRoutes);
 app.use("/horario", horarioRoutes);
 app.use("/auth", authRoutes); // Certifique-se de que esta linha está presente
 app.use("/register", registerRoutes);
+app.use("/indisponibilidade", indisponibilidadeRoutes);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);

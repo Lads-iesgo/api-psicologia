@@ -40,3 +40,12 @@ export interface HorarioInterface {
   id?: number;
   horario: string;
 }
+
+export interface IndisponibilidadeInterface{
+  id?: number;
+  data_indisponivel: Date | string;
+  descricao: string;
+  hora_inicio: Date | string;
+  hora_fim: Date | string;
+}
+

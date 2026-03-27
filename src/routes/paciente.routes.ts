@@ -4,6 +4,7 @@ import {
   getPacienteById,
   createPaciente,
   updatePaciente,
+  deletePaciente,
 } from "../controller/pacienteController";
 
 const router = express.Router();
@@ -13,5 +14,6 @@ router.get("/", getPaciente); // GET /paciente
 router.get("/:id", getPacienteById); // GET /paciente/:id
 router.post("/", createPaciente); // POST /paciente
 router.put("/:id", updatePaciente); // PUT /paciente/:id
+router.delete("/:id", deletePaciente) // DELETE /paciente/:id
 
 export default router;
