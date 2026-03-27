@@ -8,7 +8,7 @@ import {
 
 const router = express.Router();
 
-//Rotas Paciente
+// Rotas Paciente
 router.get("/", getPaciente); // GET /paciente
 router.get("/:id", getPacienteById); // GET /paciente/:id
 router.post("/", createPaciente); // POST /paciente

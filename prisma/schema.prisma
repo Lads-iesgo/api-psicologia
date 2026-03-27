@@ -8,7 +8,7 @@ datasource db {
 }
 
 model consulta {
-  id                  Int                 @id
+  id                  Int                 @id @default(autoincrement()) // Tem que mudar para autoincrement o id no banco de dados também
   paciente_id         Int
   data_consulta       DateTime?           @db.Date
   horario_id          Int
@@ -72,7 +72,7 @@ model perfil {
 model usuario {
   id            Int        @id @default(autoincrement())
   nome_completo String?    @db.VarChar(100)
-  email         String     @unique(map: "email") @db.VarChar(150)
+  email         String     @db.VarChar(150)
   senha_hash    String?    @db.VarChar(255)
   telefone      String?    @db.VarChar(20)
   cpf           String     @unique(map: "cpf") @db.VarChar(14)

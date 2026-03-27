@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import prisma from "../config/db";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
@@ -7,24 +7,22 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
   try {
     const { email, senha } = req.body;
 
-    // Verifica se o usuário existe no banco de dados e busca nome e perfil_id
-    const [rows]: any = await pool.query(
-      "SELECT * FROM usuario WHERE email = ?",
-      [email]
-    );
+    // Verifica se o usuário existe no banco de dados e busca nome e o perfil linkado a ele
+    const usuario = await prisma.usuario.findFirst({
+      where: { email },
+      include: {perfil: true}
+    });
 
-    if (rows.length === 0) {
-      res.status(401).json({ // Alterado para 401 para não revelar se o email existe ou não
+    if(!usuario){
+      res.status(401).json({
         status: "error",
-        message: "Usuário ou senha inválido.",
+        messsage: "Usuário não encontrado, verifique se a senha ou o email estão corretos!" // Não devolve o campo errado por segunraça
       });
       return;
-    }
-
-    const usuario = rows[0];
+    };
 
     // Verifica se a senha está correta
-    const senhaValida = await bcrypt.compare(senha, usuario.senha_hash);
+    const senhaValida = await bcrypt.compare(senha, usuario.senha_hash!);
     if (!senhaValida) {
       res.status(401).json({
         status: "error",
@@ -34,16 +32,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     }
 
     // Busca o nome do perfil (role)
-    let nomePerfil = 'Desconhecido'; // Valor padrão caso não encontre
-    if (usuario.perfil_id) {
-      const [perfilRows]: any = await pool.query(
-        "SELECT nome FROM perfil WHERE id = ?",
-        [usuario.perfil_id]
-      );
-      if (perfilRows.length > 0) {
-        nomePerfil = perfilRows[0].nome;
-      }
-    }
+    const nomePerfil = usuario.perfil?.nome ?? "Desconhecido";
 
     // Gera um token JWT com id e role
     const jwtSecret = process.env.JWT_SECRET;

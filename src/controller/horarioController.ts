@@ -1,97 +1,75 @@
-import pool from "../config/db";
-
+import prisma from "../config/db";
 import { HorarioInterface } from "../interfaces/types";
-
 import { Request, Response, NextFunction } from "express";
 
-export const getHorario = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getHorario = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM horario_agendamento");
-    res.status(200).json(rows);
+    const todos_horarios_agendados = await prisma.horario_agendamento.findMany();
+    res.status(200).json(todos_horarios_agendados);
   } catch (error) {
     next(error);
   }
 };
 
-export const getHorarioById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getHorarioById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const [rows]: any = await pool.query(
-      "SELECT * FROM horario_agendamento WHERE id = ?",
-      [id]
-    );
+    const id_horarios_agendados = await prisma.horario_agendamento.findFirst({
+      where: {id}
+    });
 
-    if (rows.length === 0) {
+    if (!id_horarios_agendados) {
       res.status(404).json({ message: "Horário não encontrado" });
       return;
     }
 
-    res.status(200).json(rows[0]);
+    res.status(200).json(id_horarios_agendados);
   } catch (error) {
     next(error);
   }
 };
 
-export const createHorario = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const createHorario = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { horario }: HorarioInterface = req.body;
 
-    const [result]: any = await pool.query(
-      "INSERT INTO horario_agendamento (horario) VALUES (?)",
-      [horario]
-    );
+    if (!horario) {
+      res.status(400).json({ message: "O campo horário é obrigatório para criar um novo horário." });
+      return;
+    }
 
-    const newHorario: HorarioInterface = {
-      id: result.insertId,
-      horario,
-    };
+    const criar_horario = await prisma.horario_agendamento.create({
+      data: {horario}
+    });
 
-    res.status(201).json(newHorario);
+    res.status(201).json(criar_horario);
   } catch (error) {
     next(error);
   }
 };
 
-export const updateHorario = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+// Atualiza as consultas sem precisar criar uma variavel que recebe as atualizações
+export const updateHorario = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const { horario } = req.body;
+    const { horario }: HorarioInterface = req.body;
 
     if (!horario) {
-      res
-        .status(400)
-        .json({ message: "O campo horãrio é obrigatório para atualização." });
+      res.status(400).json({ message: "O campo horário é obrigatório para atualização." });
       return;
     }
 
-    const [result]: any = await pool.query(
-      "UPDATE horario_agendamento SET horario = ? WHERE id = ?",
-      [horario, id]
-    );
+    const atualiza_horario = await prisma.horario_agendamento.update({
+      where: {id},
+      data: {horario: horario}
+    });
 
-    if (result.affectedRows === 0) {
-      res.status(404).json({ message: "Horãrio não encontrado" });
+    res.status(200).json(atualiza_horario);
+  } catch (error: any) {
+    if (error.code === "P2025") {
+      res.status(404).json({ message: "Horário não encontrado" });
       return;
-    }
-
-    res.status(200).json({ id, horario });
-  } catch (error) {
+    };
     next(error);
   }
 };
