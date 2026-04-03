@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-const cors = require("cors");
+import cors from "cors";
 import mysql from "mysql2/promise";
 
 import userRoutes from "./user.routes";

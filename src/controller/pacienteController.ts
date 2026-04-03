@@ -47,6 +47,13 @@ export const createPaciente = async (req: Request, res: Response, next: NextFunc
       endereco,
     }: PacienteInterface = req.body;
 
+    if(cpf == undefined){
+      res.status(401).json({
+        message: "Houve algum problema no campo de CPF"
+      });
+      return;
+    }
+
     const criar_paciente = await prisma.paciente.create({
       data: {
         nome_completo: nome_completo ? String(nome_completo) : undefined,
@@ -59,12 +66,6 @@ export const createPaciente = async (req: Request, res: Response, next: NextFunc
         endereco: endereco ? String(endereco) : undefined,
       }
     })
-
-    if(cpf == undefined){
-      res.status(401).json({
-        message: "Houve algum problema no campo de CPF"
-      });
-    }
 
     res.status(201).json(criar_paciente);
   } catch (error) {
