@@ -12,15 +12,15 @@ model consulta {
   paciente_id         Int
   data_consulta       DateTime?           @db.Date
   horario_id          Int
-  fisioterapeuta_id   Int
+  aluno_id   Int
   status              consulta_status?
   horario_agendamento horario_agendamento @relation(fields: [horario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_horario_agendamento1")
   paciente            paciente            @relation(fields: [paciente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_paciente1")
-  usuario             usuario             @relation(fields: [fisioterapeuta_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_usuario1")
+  usuario             usuario             @relation(fields: [aluno_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_usuario1")
 
   @@index([horario_id], map: "fk_consulta_horario_agendamento1_idx")
   @@index([paciente_id], map: "fk_consulta_paciente1_idx")
-  @@index([fisioterapeuta_id], map: "fk_consulta_usuario1_idx")
+  @@index([aluno_id], map: "fk_consulta_usuario1_idx")
 }
 
 model horario_agendamento {

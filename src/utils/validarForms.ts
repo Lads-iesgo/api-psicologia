@@ -6,15 +6,19 @@ export async function validarInputs(req: Request, res: Response, next: NextFunct
     try {
         const { cpf, cep, telefone }: PacienteInterface = req.body;
 
+        const cepFormatado = cep.replace(/\D/g, "");
+        const telefoneFormatado = telefone.replace(/\D/g, "");
+        const cpfFormatado = cpf.replace(/\D/g, "");
+
         const regexTelefone = /^[1-9]{2}9[0-9]{8}$/;
         const regexCpf = /^[0-9]{11}$/;
 
-        if (!telefone || !regexTelefone.test(telefone)) {
+        if (!telefone || !regexTelefone.test(telefoneFormatado)) {
             res.status(400).json({ message: "Telefone incorreto ou faltando caracteres!" });
             return;
         }
 
-        if (!cpf || !regexCpf.test(cpf)) {
+        if (!cpf || !regexCpf.test(cpfFormatado)) {
             res.status(400).json({ message: "CPF incorreto ou faltando caracteres!" });
             return;
         }
@@ -24,10 +28,10 @@ export async function validarInputs(req: Request, res: Response, next: NextFunct
             return;
         }
 
-        const resposta = await fetch(`https://viacep.com.br/ws/${cep}/json`);
+        const resposta = await fetch(`https://viacep.com.br/ws/${cepFormatado}/json`);
 
         if (!resposta.ok) {
-            res.status(400).json({ message: "Erro ao consultar o CEP na base de dados externa." });
+            res.status(400).json({ message: "Erro ao consultar o CEP na base de dados." });
             return;
         }
 

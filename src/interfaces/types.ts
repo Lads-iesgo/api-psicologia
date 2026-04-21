@@ -32,7 +32,7 @@ export interface ConsultaInterface {
   paciente_id: number;
   data_consulta: Date | string;
   horario_id: number;
-  fisioterapeuta_id: number;
+  aluno_id: number;
   status?: string;
 }
 

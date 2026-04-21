@@ -36,7 +36,7 @@ export const createConsulta = async (req: Request, res: Response, next: NextFunc
       paciente_id,
       data_consulta,
       horario_id,
-      fisioterapeuta_id,
+      aluno_id,
       status
     }: ConsultaInterface = req.body;
 
@@ -51,9 +51,9 @@ export const createConsulta = async (req: Request, res: Response, next: NextFunc
         paciente_id: Number(paciente_id),
         data_consulta: new Date((data_consulta as string) + "T00:00:00.000Z"),
         horario_id: Number(horario_id),
-        fisioterapeuta_id: Number(fisioterapeuta_id),
+        aluno_id: Number(aluno_id),
         status: status ? (status as consulta_status) : undefined, 
-      }
+      } as any
     });
 
     res.status(201).json(criar_consulta);
@@ -72,7 +72,7 @@ export const createConsulta = async (req: Request, res: Response, next: NextFunc
 export const updateConsulta = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const campos = [ "paciente_id", "data_consulta", "horario_id", "fisioterapeuta_id", "status"]
+    const campos = [ "paciente_id", "data_consulta", "horario_id", "aluno_id", "status"]
     // Tem que colocar a verificação de atualização
       const dados_atualizacao: any = {};
     for (const campo of campos) {
@@ -80,7 +80,7 @@ export const updateConsulta = async (req: Request, res: Response, next: NextFunc
         if (campo === "data_consulta") {
           const d = req.body[campo];
           dados_atualizacao[campo] = new Date(typeof d === "string" && d.includes("T") ? d.split("T")[0] + "T00:00:00.000Z" : d);
-        } else if (["paciente_id", "horario_id", "fisioterapeuta_id"].includes(campo)) {
+        } else if (["paciente_id", "horario_id", "aluno_id"].includes(campo)) {
           dados_atualizacao[campo] = Number(req.body[campo]);
         } else if (campo === "status") {
           dados_atualizacao[campo] = (req.body[campo] as consulta_status) ?? null;
