@@ -11,6 +11,9 @@ import authRoutes from "./auth.routes";
 import registerRoutes from "./register.routes";
 import indisponibilidadeRoutes from "./indisponibilidade.routes"
 
+import { authMiddleware } from "../middleware/authMiddleware";
+import { readOnlyForStudents, checkRole, applyConsultaDataIsolation } from "../middleware/rbacMiddleware";
+
 if (!process.env.JWT_SECRET) {
   throw new Error("A variável de ambiente JWT_SECRET não está definida.");
 }
@@ -28,14 +31,17 @@ app.get("/", (req: Request, res: Response) => {
   res.status(200).json({ message: "API Fisioterapia está funcionando!" });
 });
 
-app.use("/usuario", userRoutes);
-app.use("/paciente", clientRoutes); // Exemplo para rotas de paciente
-app.use("/perfil", perfilRoutes);
-app.use("/consulta", consultaRoutes);
-app.use("/horario", horarioRoutes);
-app.use("/auth", authRoutes); // Certifique-se de que esta linha está presente
+// Rotas públicas (sem autenticação)
+app.use("/auth", authRoutes);
 app.use("/register", registerRoutes);
-app.use("/indisponibilidade", indisponibilidadeRoutes);
+
+// Rotas protegidas (com autenticação e RBAC)
+app.use("/usuario", authMiddleware, readOnlyForStudents, userRoutes);
+app.use("/paciente", authMiddleware, readOnlyForStudents, clientRoutes);
+app.use("/perfil", authMiddleware, checkRole("professor", "coordenador", "admin"), perfilRoutes);
+app.use("/consulta", authMiddleware, readOnlyForStudents, applyConsultaDataIsolation, consultaRoutes);
+app.use("/horario", authMiddleware, readOnlyForStudents, horarioRoutes);
+app.use("/indisponibilidade", authMiddleware, indisponibilidadeRoutes);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);

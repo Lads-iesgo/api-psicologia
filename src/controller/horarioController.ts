@@ -2,10 +2,36 @@ import prisma from "../config/db";
 import { HorarioInterface } from "../interfaces/types";
 import { Request, Response, NextFunction } from "express";
 
+// Converte o DateTime que Prisma retorna para campos TIME do MySQL para "HH:MM"
+// O Prisma retorna campos TIME como DateTime com data base 1970-01-01T00:00:00Z
+function formatHorario(value: any): string {
+  if (value instanceof Date) {
+    const h = String(value.getUTCHours()).padStart(2, "0");
+    const m = String(value.getUTCMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
+  }
+  if (typeof value === "string") {
+    return value.substring(0, 5);
+  }
+  return String(value ?? "");
+}
+
+// Converte "HH:MM" para Date com base 1970-01-01 (formato esperado pelo Prisma para @db.Time)
+function parseHorario(value: string): Date {
+  const [h, m] = value.split(":").map(Number);
+  const d = new Date(0);
+  d.setUTCHours(h, m, 0, 0);
+  return d;
+}
+
 export const getHorario = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const todos_horarios_agendados = await prisma.horario_agendamento.findMany();
-    res.status(200).json(todos_horarios_agendados);
+    const todos_os_horarios = await prisma.horario_agendamento.findMany();
+    const formatted = todos_os_horarios.map((r: typeof todos_os_horarios[number]) => ({
+      ...r,
+      horario: formatHorario(r.horario),
+    }));
+    res.status(200).json(formatted);
   } catch (error) {
     next(error);
   }
@@ -23,7 +49,7 @@ export const getHorarioById = async (req: Request, res: Response, next: NextFunc
       return;
     }
 
-    res.status(200).json(id_horarios_agendados);
+    res.status(200).json({id_horarios_agendados, horario: formatHorario(id_horarios_agendados.horario)});
   } catch (error) {
     next(error);
   }

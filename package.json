@@ -13,6 +13,7 @@
   "description": "",
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
     "@types/express-validator": "^3.0.2",
     "@types/jsonwebtoken": "^9.0.9",
