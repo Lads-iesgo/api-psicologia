@@ -3,7 +3,7 @@ import {
   getPerfil,
   getPerfilById,
   createPerfil,
-  updatePerfil,
+  updatePerfil
 } from "../controller/perfilController";
 
 const router = express.Router();

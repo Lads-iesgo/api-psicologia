@@ -1,50 +1,40 @@
-import pool from "../config/db";
-
+import prisma from "../config/db";
 import { PacienteInterface } from "../interfaces/types";
-
+import { paciente_genero } from "../../generated/prisma/enums";
 import { Request, Response, NextFunction } from "express";
 
-export const getPaciente = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+function parseDateSafe(value: any): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+export const getPaciente = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM paciente");
-    res.status(200).json(rows);
+    const todos_pacientes = await prisma.paciente.findMany();
+    res.status(200).json(todos_pacientes);
   } catch (error) {
     next(error);
   }
 };
 
-export const getPacienteById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const getPacienteById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const [rows]: any = await pool.query(
-      "SELECT * FROM paciente WHERE id = ?",
-      [id]
-    );
+    const busca_paciente_pelo_id = await prisma.paciente.findUnique({where: {id}});
 
-    if (rows.length === 0) {
+    if (!busca_paciente_pelo_id) {
       res.status(404).json({ message: "Paciente não encontrado" });
       return;
     }
 
-    res.status(200).json(rows[0]);
+    res.status(200).json(busca_paciente_pelo_id);
   } catch (error) {
     next(error);
   }
 };
 
-export const createPaciente = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const createPaciente = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
       nome_completo,
@@ -57,85 +47,87 @@ export const createPaciente = async (
       endereco,
     }: PacienteInterface = req.body;
 
-    const [result]: any = await pool.query(
-      "INSERT INTO paciente (nome_completo, email, telefone, genero, data_nascimento, cpf, cep, endereco) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [
-        nome_completo,
-        email,
-        telefone,
-        genero,
-        data_nascimento,
-        cpf,
-        cep,
-        endereco,
-      ]
-    );
+    if(cpf == undefined){
+      res.status(401).json({
+        message: "Houve algum problema no campo de CPF"
+      });
+      return;
+    }
 
-    const newPaciente: PacienteInterface = {
-      id: result.insertId,
-      nome_completo,
-      email,
-      telefone,
-      genero,
-      data_nascimento,
-      cpf,
-      cep,
-      endereco,
-    };
+    const criar_paciente = await prisma.paciente.create({
+      data: {
+        nome_completo: nome_completo ? String(nome_completo) : undefined,
+        email: email ? String(email) : undefined,
+        telefone: telefone ? String(telefone) : undefined,
+        genero: genero ? (genero as paciente_genero) : undefined,
+        data_nascimento: data_nascimento ? new Date(data_nascimento) : undefined,
+        cpf: String(cpf),
+        cep: cep ? String(cep) : undefined,
+        endereco: endereco ? String(endereco) : undefined,
+      }
+    })
 
-    res.status(201).json(newPaciente);
+    res.status(201).json(criar_paciente);
   } catch (error) {
     next(error);
   }
 };
 
-export const updatePaciente = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const updatePaciente = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const campos = [
-      "nome_completo",
-      "email",
-      "telefone",
-      "genero",
-      "data_nascimento",
-      "cpf",
-      "cep",
-      "endereco",
-    ];
+    const campos = [ "nome_completo", "email", "telefone", "genero", "data_nascimento", "cpf", "cep", "endereco" ];
 
-    // Monta dinamicamente os campos a serem atualizados
-    const updates = [];
-    const values = [];
+    // Tem que colocar a verificação de atualização
+    const dados_atualizacao: any = {};
+
     for (const campo of campos) {
       if (req.body[campo] !== undefined) {
-        updates.push(`${campo} = ?`);
-        values.push(req.body[campo]);
+        if (campo === "data_nascimento") {
+          dados_atualizacao[campo] = parseDateSafe(req.body[campo]);
+        } else {
+          dados_atualizacao[campo] = campo === "genero"
+            ? (req.body[campo] as paciente_genero) ?? null
+            : req.body[campo];
+        }
       }
-    }
+    };
 
-    if (updates.length === 0) {
+    if (Object.keys(dados_atualizacao).length === 0) {
       res.status(400).json({ message: "Nenhum campo para atualizar." });
       return;
     }
 
-    values.push(id);
+    const atualizar_paciente = await prisma.paciente.update({
+      where: {id},
+      data: dados_atualizacao
+    });
 
-    const [result]: any = await pool.query(
-      `UPDATE paciente SET ${updates.join(", ")} WHERE id = ?`,
-      values
-    );
-
-    if (result.affectedRows === 0) {
+    res.status(200).json(atualizar_paciente);
+} catch (error: any) {
+    if (error?.code === "P2025") {
       res.status(404).json({ message: "Paciente não encontrado" });
       return;
-    }
-
-    res.status(200).json({ id, ...req.body });
-  } catch (error) {
+    };
+    
     next(error);
   }
-};
+}
+
+export const deletePaciente = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id, 10);
+
+    await prisma.paciente.delete({
+      where: {id}
+    });
+
+    res.status(200).json({ message: "Paciente excluído com sucesso" });
+  } catch (error: any) {
+    if (error?.code === "P2025") {
+      res.status(404).json({ message: "Paciente não encontrado." });
+      return;
+    };
+    next(error);
+  }
+}
