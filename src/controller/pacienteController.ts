@@ -56,14 +56,14 @@ export const createPaciente = async (req: Request, res: Response, next: NextFunc
 
     const criar_paciente = await prisma.paciente.create({
       data: {
-        nome_completo: nome_completo ? String(nome_completo) : undefined,
-        email: email ? String(email) : undefined,
-        telefone: telefone ? String(telefone) : undefined,
-        genero: genero ? (genero as paciente_genero) : undefined,
-        data_nascimento: data_nascimento ? new Date(data_nascimento) : undefined,
-        cpf: String(cpf),
-        cep: cep ? String(cep) : undefined,
-        endereco: endereco ? String(endereco) : undefined,
+        nome_completo: nome_completo as string,
+        email: email as string,
+        telefone: telefone as string,
+        genero: genero as paciente_genero,
+        data_nascimento: new Date(data_nascimento),
+        cpf: cpf as string,
+        cep: cep as string,
+        endereco: endereco as string,
       }
     })
 
@@ -76,7 +76,7 @@ export const createPaciente = async (req: Request, res: Response, next: NextFunc
 export const updatePaciente = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const campos = [ "nome_completo", "email", "telefone", "genero", "data_nascimento", "cpf", "cep", "endereco" ];
+    const campos = [ "nome_completo", "email", "telefone", "genero", "data_nascimento", "cpf", "cep", "endereco", "ativo" ];
 
     // Tem que colocar a verificação de atualização
     const dados_atualizacao: any = {};
@@ -85,6 +85,11 @@ export const updatePaciente = async (req: Request, res: Response, next: NextFunc
       if (req.body[campo] !== undefined) {
         if (campo === "data_nascimento") {
           dados_atualizacao[campo] = parseDateSafe(req.body[campo]);
+        } 
+        
+        else if (campo === "ativo") {
+					dados_atualizacao[campo] = Number(req.body[campo]);
+          
         } else {
           dados_atualizacao[campo] = campo === "genero"
             ? (req.body[campo] as paciente_genero) ?? null
@@ -110,24 +115,6 @@ export const updatePaciente = async (req: Request, res: Response, next: NextFunc
       return;
     };
     
-    next(error);
-  }
-}
-
-export const deletePaciente = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const id = parseInt(req.params.id, 10);
-
-    await prisma.paciente.delete({
-      where: {id}
-    });
-
-    res.status(200).json({ message: "Paciente excluído com sucesso" });
-  } catch (error: any) {
-    if (error?.code === "P2025") {
-      res.status(404).json({ message: "Paciente não encontrado." });
-      return;
-    };
     next(error);
   }
 }

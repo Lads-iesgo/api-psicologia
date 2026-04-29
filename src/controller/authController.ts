@@ -20,7 +20,16 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
       });
       return;
     };
-
+    
+    if (usuario.ativo === 0) {
+			res.status(403).json({
+				status: "error",
+				message:
+					"Sua conta foi desativada. Entre em contato com a coordenação.",
+			});
+			return;
+		}
+    
     // Verifica se a senha está correta
     const senhaValida = await bcrypt.compare(senha, usuario.senha_hash!);
     if (!senhaValida) {
