@@ -11,7 +11,7 @@ import {
 const router = Router();
 
 router.get("/", getUsers);
-router.get("/fisioterapeutas", getFisioterapeutas); // Nova rota
+router.get("/alunos", getFisioterapeutas); // Nova rota
 router.get("/:id", getUsersById);
 router.post("/", createUser);
 router.put("/:id", updateUser);
