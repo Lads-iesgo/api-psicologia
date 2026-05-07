@@ -3,7 +3,8 @@ import { body, validationResult } from "express-validator";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import pool from "../config/db"; // Conexão com o banco de dados MySQL
+import bcrypt from "bcrypt";
+import prisma from "../config/db"; // Conexão com o banco de dados MySQL através do prisma
 
 const router = express.Router();
 
@@ -47,29 +48,24 @@ router.post(
     const { nome_completo, email, senha_hash, telefone, cpf, semestre } = req.body;
     const arquivo = req.file;
 
-    const query = `
-      INSERT INTO usuarios (
-        nome_completo, email, senha_hash, telefone, cpf, semestre, arquivo_nome, arquivo_caminho, arquivo_tipo, arquivo_tamanho
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [
-      nome_completo,
-      email,
-      senha_hash,
-      telefone,
-      cpf,
-      semestre,
-      arquivo?.filename || null,
-      arquivo?.path || null,
-      arquivo?.mimetype || null,
-      arquivo?.size || null,
-    ];
-
     try {
-      const [result]: any = await pool.query(query, values);
+      const senha_hashFinal = await bcrypt.hash(senha_hash, 10);
+
+      const registra_novo_usuario = await prisma.usuario.create({
+        data: {
+          nome_completo,
+          email,
+          senha_hash: senha_hashFinal,
+          telefone,
+          cpf,
+          semestre,
+          perfil_id: 2
+        }
+      });
+
       res.status(201).json({
         message: "Usuário registrado com sucesso!",
-        id: result.insertId,
+        id: registra_novo_usuario.id
       });
     } catch (err) {
       console.error("Erro ao inserir dados:", err);
