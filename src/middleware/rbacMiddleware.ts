@@ -91,7 +91,7 @@ export const checkConsultaOwnership = async (
 		return;
 	}
 
-	if (consulta.fisioterapeuta_id !== user.id) {
+	if (consulta.aluno_id !== user.id) {
 		res.status(403).json({
 			message: "Você não tem acesso a esta consulta.",
 		});
@@ -144,7 +144,7 @@ export const applyConsultaDataIsolation = (
 
 	// Se for Aluno ou Fisioterapeuta, armazena no req para o controller usar
 	if (ROLE_GROUPS.READ_ONLY.includes(user.role)) {
-		(req as any).dataIsolation = { fisioterapeuta_id: user.id };
+		(req as any).dataIsolation = { aluno_id: user.id };
 	}
 
 	next();

@@ -12,7 +12,7 @@ import { restrictProfessorUserCreation } from "../middleware/rbacMiddleware";
 const router = Router();
 
 router.get("/", getUsers);
-router.get("/fisioterapeutas", getFisioterapeutas); // Nova rota
+router.get("/alunos", getFisioterapeutas); // Nova rota
 router.get("/:id", getUsersById);
 router.post("/", restrictProfessorUserCreation, createUser);
 router.put("/:id", updateUser);
