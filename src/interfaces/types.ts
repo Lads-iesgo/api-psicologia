@@ -20,6 +20,7 @@ export interface UserInterface {
   cpf: string;
   semestre: string;
   perfil_id: number;
+  ativo?: Number;
 }
 
 export interface PerfilInterface {

@@ -8,12 +8,13 @@ import {
   deleteUser
 } from "../controller/userController";
 
+import { restrictProfessorUserCreation } from "../middleware/rbacMiddleware";
 const router = Router();
 
 router.get("/", getUsers);
 router.get("/alunos", getFisioterapeutas); // Nova rota
 router.get("/:id", getUsersById);
-router.post("/", createUser);
+router.post("/", restrictProfessorUserCreation, createUser);
 router.put("/:id", updateUser);
 router.delete("/:id", deleteUser); // Se você implementar a deleção
 

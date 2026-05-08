@@ -18,7 +18,8 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction):
         telefone: true,
         cpf: true,
         semestre: true,
-        perfil_id: true
+        perfil_id: true,
+        ativo: true
       }
     });
     res.status(200).json(todos_usuarios);
@@ -32,8 +33,14 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction):
 export const getUsersById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
-    const busca_id_usuario = await prisma.usuario.findFirst({
-      where: {id}
+
+    if (isNaN(id)) {
+      res.status(400).json({ error: "ID inválido fornecido." });
+      return;
+    }
+    
+    const busca_id_usuario = await prisma.usuario.findUnique({
+      where: {id: id}
     });
 
     if (!busca_id_usuario) {
@@ -58,6 +65,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       cpf,
       semestre,
       perfil_id,
+      ativo
     }: UserInterface = req.body;
 
     if (!nome_completo || !email || !senha || perfil_id === undefined) {
@@ -89,13 +97,23 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     // Cria um novo usuário
     const criar_usuario = await prisma.usuario.create({
       data:{
-        nome_completo: nome_completo ? nome_completo as string : undefined,
+        nome_completo: nome_completo as string,
         email: email as string,
-        senha_hash: senha_hash ? senha_hash as string : undefined,
-        telefone: telefone ? telefone as string : undefined,
+        senha_hash: senha_hash as string,
+        telefone: telefone as string,
         cpf: cpf as string,
-        semestre: semestre ? semestre as string : undefined,
+        semestre: semestre as string,
         perfil_id: Number(perfil_id),
+      },
+      select: {
+        nome_completo: true,
+        email: true,
+        senha_hash: true,
+        telefone: true,
+        cpf: true,
+        semestre: true,
+        perfil_id: true,
+        ativo: true
       }
     });
 
@@ -126,6 +144,7 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
       cpf,
       semestre,
       perfil_id,
+      ativo
     }: UserInterface = req.body;
 
     // Coleta os campos que foram fornecidos para atualização
@@ -134,6 +153,7 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
     if (nome_completo !== undefined) campos_atualizados.nome_completo = nome_completo;
     if (telefone !== undefined) campos_atualizados.telefone = telefone;
     if (semestre !== undefined) campos_atualizados.semestre = semestre;
+    if (ativo !== undefined) campos_atualizados.ativo = Number(ativo);
     if (perfil_id !== undefined) campos_atualizados.perfil_id = Number(perfil_id);
 
     if (nome_completo !== undefined) {
@@ -159,7 +179,7 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 
     if (cpf !== undefined) {
       // Verifica se o novo CPF já existe para outro usuário
-      const existe_cpf = await prisma.usuario.findUnique({
+      const existe_cpf = await prisma.usuario.findFirst({
         where: {cpf}
       });
 
@@ -191,6 +211,7 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
         cpf: true,
         semestre: true,
         perfil_id: true,
+        ativo: true
       },
     });
 
@@ -226,7 +247,8 @@ export const getFisioterapeutas = async (req: Request, res: Response, next: Next
         telefone: true,
         cpf: true,
         semestre: true,
-        perfil_id: true
+        perfil_id: true,
+        ativo: true
       }
     });
     res.status(200).json(todos_fisioterapeutas);

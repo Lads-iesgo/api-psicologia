@@ -8,11 +8,11 @@ datasource db {
 }
 
 model consulta {
-  id                  Int                 @id @default(autoincrement()) // Tem que mudar para autoincrement o id no banco de dados também
+  id                  Int                 @id @default(autoincrement())
   paciente_id         Int
-  data_consulta       DateTime?           @db.Date
+  data_consulta       DateTime            @db.Date
   horario_id          Int
-  aluno_id   Int
+  aluno_id            Int
   status              consulta_status?
   horario_agendamento horario_agendamento @relation(fields: [horario_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_horario_agendamento1")
   paciente            paciente            @relation(fields: [paciente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_consulta_paciente1")
@@ -39,14 +39,15 @@ model indisponibilidade {
 
 model paciente {
   id                 Int                  @id @default(autoincrement())
-  nome_completo      String?              @db.VarChar(100)
-  email              String?              @unique(map: "email") @db.VarChar(150)
-  telefone           String?              @db.VarChar(20)
-  genero             paciente_genero?
-  data_nascimento    DateTime?            @db.Date
-  cpf                String               @unique(map: "cpf") @db.VarChar(14)
-  cep                String?              @db.VarChar(10)
-  endereco           String?              @db.VarChar(255)
+  nome_completo      String               @db.VarChar(100)
+  email              String               @db.VarChar(150)
+  telefone           String               @db.VarChar(20)
+  genero             paciente_genero
+  data_nascimento    DateTime             @db.Date
+  cpf                String               @db.VarChar(14)
+  cep                String               @db.VarChar(10)
+  endereco           String               @db.VarChar(255)
+  ativo              Int?                 @db.TinyInt
   consulta           consulta[]
   paciente_documento paciente_documento[]
 }
@@ -71,13 +72,14 @@ model perfil {
 
 model usuario {
   id            Int        @id @default(autoincrement())
-  nome_completo String?    @db.VarChar(100)
+  nome_completo String     @db.VarChar(100)
   email         String     @db.VarChar(150)
-  senha_hash    String?    @db.VarChar(255)
+  senha_hash    String     @db.VarChar(255)
   telefone      String?    @db.VarChar(20)
-  cpf           String     @unique(map: "cpf") @db.VarChar(14)
+  cpf           String     @db.VarChar(14)
   semestre      String?    @db.VarChar(20)
   perfil_id     Int
+  ativo         Int?       @db.TinyInt
   consulta      consulta[]
   perfil        perfil     @relation(fields: [perfil_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_usuario_perfil")
 
