@@ -1,6 +1,6 @@
-# API Fisioterapia
+# API Psicologia
 
-Este projeto é uma API REST desenvolvida em Node.js e TypeScript, destinada a auxiliar o gerenciamento de pacientes e usuários para o curso de fisioterapia.
+Este projeto é uma API REST desenvolvida em Node.js e TypeScript, destinada a auxiliar o gerenciamento de pacientes e usuários para o curso de psicologia.
 
 ## Repositório Git
 

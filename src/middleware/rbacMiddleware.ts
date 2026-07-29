@@ -1,6 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import prisma from "../config/db";
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { id: number; role: string };
+      dataIsolation?: { aluno_id: number };
+    }
+  }
+}
+
 // Nomes dos perfis (valores exatos do campo perfil.nome no banco)
 const ROLES = {
 	ADMIN: "admin",

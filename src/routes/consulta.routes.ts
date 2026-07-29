@@ -6,14 +6,15 @@ import {
   updateConsulta,
   deleteConsulta,
 } from "../controller/consultaController";
+import { checkConsultaOwnership, readOnlyForStudents } from "../middleware/rbacMiddleware";
 
 const router = express.Router();
 
 //Rotas Perfil
 router.get("/", getConsulta); // GET /consulta
-router.get("/:id", getConsultaById); // GET consulta/:id
+router.get("/:id", readOnlyForStudents, checkConsultaOwnership, getConsultaById); // GET consulta/:id
 router.post("/", createConsulta); // POST /consulta
-router.put("/:id", updateConsulta); // PUT /consulta/:id
-router.delete("/:id", deleteConsulta); // DELETE /consulta/:id
+router.put("/:id", readOnlyForStudents, checkConsultaOwnership, updateConsulta); // PUT /consulta/:id
+router.delete("/:id", readOnlyForStudents, checkConsultaOwnership, deleteConsulta); // DELETE /consulta/:id
 
 export default router;

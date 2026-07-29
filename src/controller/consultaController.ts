@@ -6,7 +6,9 @@ import { Request, Response, NextFunction } from "express";
 // Busca todos as consultas do banco de dados
 export const getConsulta = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const todas_consultas = await prisma.consulta.findMany();
+    const isolamento = (req as any).dataIsolation; // { aluno_id: number } | undefined
+    const todas_consultas = await prisma.consulta.findMany({ where: isolamento ? { aluno_id: isolamento.aluno_id } : undefined});
+    
     res.status(200).json(todas_consultas);
   } catch (error) {
     next(error);
